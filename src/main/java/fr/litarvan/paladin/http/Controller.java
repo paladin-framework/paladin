@@ -1,5 +1,5 @@
 package fr.litarvan.paladin.http;
 
-public class Controller
+public abstract class Controller
 {
 }

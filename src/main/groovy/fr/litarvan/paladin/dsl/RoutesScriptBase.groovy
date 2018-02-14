@@ -9,7 +9,17 @@ abstract class RoutesScriptBase extends Script
 
     }
 
+    void get(String path, Controller controller)
+    {
+
+    }
+
     void post(String path, Closure action)
+    {
+
+    }
+
+    void post(String path, Controller controller)
     {
 
     }
@@ -19,12 +29,27 @@ abstract class RoutesScriptBase extends Script
 
     }
 
+    void put(String path, Controller controller)
+    {
+
+    }
+
     void delete(String path, Closure action)
     {
 
     }
 
+    void delete(String path, Controller controller)
+    {
+
+    }
+
     void all(String path, List<Closure> actions)
+    {
+
+    }
+
+    void all(String path, Controller controller)
     {
 
     }
