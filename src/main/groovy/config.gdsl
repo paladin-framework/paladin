@@ -1,0 +1,5 @@
+def ctx = context(pathRegexp: /[^\n]*\.config\.groovy/)
+
+contributor(ctx) {
+    // TODO
+}
