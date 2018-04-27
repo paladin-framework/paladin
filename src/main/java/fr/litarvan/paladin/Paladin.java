@@ -1,69 +1,117 @@
 package fr.litarvan.paladin;
 
-import java.io.File;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import fr.litarvan.paladin.http.Controller;
+import fr.litarvan.paladin.http.routing.Router;
+import fr.litarvan.paladin.http.server.PaladinHttpServer;
+import fr.litarvan.paladin.http.server.impl.ApacheAsyncHttpServer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
-import java.net.URISyntaxException;
-
-import groovy.lang.GroovyShell;
-import org.codehaus.groovy.control.CompilationFailedException;
-import org.codehaus.groovy.control.CompilerConfiguration;
-
-import fr.litarvan.paladin.dsl.RoutesScriptBase;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Paladin
 {
-    private static Paladin paladin;
+    private static final Logger log = LoggerFactory.getLogger("Paladin");
 
-    private Paladin()
+    public static final String VERSION = "1.0.0";
+    public static final String PORT_AT = "http.port";
+    public static final long SESSION_DEFAULT_EXPIRATION_DELAY = 15 * 24 * 60 * 60 * 1000; // 15 days
+
+    private Injector injector;
+
+    private ConfigManager configManager;
+    private Router router;
+    private SessionManager sessionManager;
+
+    private Map<String, Controller> controllers;
+
+    public Paladin()
     {
+        this(new ConfigManager());
     }
 
-    public static Paladin get()
+    public Paladin(ConfigManager configManager)
     {
-        if (paladin == null)
+        this.configManager = configManager;
+        this.router = new Router(this);
+        this.sessionManager = new SessionManager(SESSION_DEFAULT_EXPIRATION_DELAY);
+
+        this.controllers = new HashMap<>();
+
+        this.injector = Guice.createInjector(new PaladinGuiceModule(this));
+    }
+
+    public void start()
+    {
+        int port = configManager.at(PORT_AT, -1);
+
+        if (port == -1)
         {
-            paladin = new Paladin();
+            throw new IllegalStateException("Can't find valid http port at #" + PORT_AT);
         }
 
-        return paladin;
+        start(new ApacheAsyncHttpServer(this, port));
     }
 
-    public Paladin routes(String path)
+    public void start(PaladinHttpServer server)
     {
+        log.info("Starting Paladin v{}", VERSION);
+
         try
         {
-            return routes(new File(Paladin.class.getResource((path.startsWith("/") ? "" : "/") + path).toURI()));
-        }
-        catch (URISyntaxException e)
-        {
-            throw new RuntimeException("Can't find given routes file '" + path + "'");
-        }
-    }
-
-    public Paladin routes(File script)
-    {
-        CompilerConfiguration config = new CompilerConfiguration();
-        config.setScriptBaseClass(RoutesScriptBase.class.getName());
-
-        GroovyShell shell = new GroovyShell(config);
-        try
-        {
-            shell.evaluate(script);
+            server.start();
         }
         catch (IOException e)
         {
             e.printStackTrace();
         }
-        catch (CompilationFailedException e)
+
+        System.out.println();
+        log.info("--> Listening on {}", server.getAddress()); // TODO: Server address
+        System.out.println();
+
+        try
         {
-            e.printStackTrace();
+            server.waitFor();
+        }
+        catch (InterruptedException ignored)
+        {
         }
 
-        return this;
+        server.shutdown();
     }
 
-    public void start()
+    public void addController(String name, Class<? extends Controller> controller)
     {
-        System.out.println("Hey");
+        this.controllers.put(name, this.injector.getInstance(controller));
+    }
+
+    public Controller getController(String name)
+    {
+        return this.controllers.get(name);
+    }
+
+    public Injector getInjector()
+    {
+        return injector;
+    }
+
+    public ConfigManager getConfigManager()
+    {
+        return configManager;
+    }
+
+    public Router getRouter()
+    {
+        return router;
+    }
+
+    public SessionManager getSessionManager()
+    {
+        return sessionManager;
     }
 }
