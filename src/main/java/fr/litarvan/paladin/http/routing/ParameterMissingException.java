@@ -1,6 +1,6 @@
 package fr.litarvan.paladin.http.routing;
 
-public class ParameterMissingException extends Exception
+public class ParameterMissingException extends RequestException
 {
     public ParameterMissingException(String message)
     {

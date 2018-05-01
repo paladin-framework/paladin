@@ -1,6 +1,6 @@
 package fr.litarvan.paladin.http.routing;
 
-public class ParameterFormatException extends Exception
+public class ParameterFormatException extends RequestException
 {
     public ParameterFormatException(String message)
     {

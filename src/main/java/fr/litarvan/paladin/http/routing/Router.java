@@ -28,7 +28,7 @@ public class Router
 
         for (Route route : routes)
         {
-            if (route.getPath().equalsIgnoreCase(request.uri()))
+            if (route.getPath().equalsIgnoreCase(request.getUri()) && route.getMethod() == request.getMethod())
             {
                 return route;
             }

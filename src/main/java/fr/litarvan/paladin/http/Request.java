@@ -4,40 +4,11 @@ import fr.litarvan.paladin.Header;
 import fr.litarvan.paladin.Paladin;
 import fr.litarvan.paladin.Session;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URL;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.nio.charset.Charset;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Stream;
 
 public class Request
 {
-    public static final String HEADER_CONTENT_TYPE = "Content-Type";
-    public static final String HEADER_HOST = "Host";
-    public static final String HEADER_USER_AGENT = "User-Agent";
-    public static final String HEADER_ACCEPT = "Accept";
-    public static final String HEDAER_ACCEPT_LANGUAGE = "Accept-Language";
-    public static final String HEADER_ACCEPT_ENCODING = "Accept-Encoding";
-    public static final String HEADER_SET_COOKIE = "Set-Cookie";
-    public static final String HEADER_COOKIE = "Cookie";
-
-    public static final String CONTENT_TYPE_PLAIN = "text/plain";
-    public static final String CONTENT_TYPE_STREAM = "application/octet-stream";
-    public static final String CONTENT_TYPE_FORM_DATA = "multipart/form-data";
-    public static final String CONTENT_TYPE_FORM_URL_ENCODED = "application/x-www-form-urlencoded";
-    public static final String CONTENT_TYPE_HTML = "text/html";
-    public static final String CONTENT_TYPE_JSON = "application/json";
-    public static final String CONTENT_TYPE_JAVASCRIPT = "application/javascript";
-    public static final String CONTENT_TYPE_TYPESCRIPT = "application/typescript";
-    public static final String CONTENT_TYPE_JPEG = "image/jpeg";
-    public static final String CONTENT_TYPE_GIF = "image/gif";
-    public static final String CONTENT_TYPE_PNG = "image/png";
-    public static final String CONTENT_TYPE_SVG = "image/svg";
-
     private Paladin paladin;
 
     private HttpMethod method;
@@ -48,170 +19,154 @@ public class Request
     private Map<String, String> params;
     private Cookie[] cookies;
 
-    public Request(Paladin paladin, HttpMethod method, String uri, Header[] headers, byte[] content)
+    public Request(Paladin paladin, HttpMethod method, String uri, Header[] headers, byte[] content, Map<String, String> params, Cookie[] cookies)
     {
         this.paladin = paladin;
         this.method = method;
         this.uri = uri;
         this.headers = headers;
         this.content = content;
-
-        Header cookie = header("Cookie");
-        if (cookie != null)
-        {
-            HeaderPair[] pairs = cookie.pairs;
-            cookies = new Cookie[pairs.length];
-
-            for (int i = 0; i < pairs.length; i++)
-            {
-                HeaderPair pair = pairs[i];
-                cookies[i] = new Cookie(pair.name, pair.value);
-            }
-        }
-        else
-        {
-            cookies = new Cookie[0];
-        }
-
-        this.params = new HashMap<>();
-
-        String[] splitURI = uri.split("\\?");
-
-        if (splitURI.length > 1)
-        {
-            addQueryParams(splitURI[1]);
-            this.uri = splitURI[0];
-        }
-
-        if (CONTENT_TYPE_FORM_URL_ENCODED.equals(contentType()))
-        {
-            addQueryParams(stringContent());
-        }
+        this.params = params;
+        this.cookies = cookies;
     }
 
-    protected void addQueryParams(String query)
-    {
-        for (String param : query.split("&"))
-        {
-            String[] split = param.split("=");
-
-            try
-            {
-                params.put(URLDecoder.decode(split[0], Charset.defaultCharset().name()), URLDecoder.decode(split[1], Charset.defaultCharset().name()));
-            }
-            catch (UnsupportedEncodingException e)
-            {
-                // Can't happen
-            }
-        }
-    }
-
-    public Paladin paladin()
+    public Paladin getPaladin()
     {
         return paladin;
     }
 
-    public HttpMethod method()
+    public HttpMethod getMethod()
     {
         return method;
     }
 
-    public String uri()
+    public void setMethod(HttpMethod method)
+    {
+        this.method = method;
+    }
+
+    public String getUri()
     {
         return uri;
     }
 
-    public String param(String name)
+    public void setUri(String uri)
     {
-        return params.get(name);
+        this.uri = uri;
     }
 
-    public Set<Map.Entry<String, String>> params()
+    public Header getHeader(String name)
     {
-        return params.entrySet();
+        for (Header header : headers)
+        {
+            if (header.getName().equalsIgnoreCase(name))
+            {
+                return header;
+            }
+        }
+
+        return null;
     }
 
-    public Header header(String name)
+    public String getHeaderValue(String name)
     {
-        return Stream.of(headers).filter(h -> h.name.equalsIgnoreCase(name)).findFirst().orElse(null);
-    }
-
-    public Header[] headers(String name)
-    {
-        return Stream.of(headers).filter(h -> h.name.equalsIgnoreCase(name)).toArray(Header[]::new);
-    }
-
-    public String contentType()
-    {
-        Header header = header("Content-Type");
+        Header header = getHeader(name);
 
         if (header == null)
         {
             return null;
         }
 
-        return header.value;
+        return header.getValue();
     }
 
-    public Header[] headers()
+    public void setHeaders(Header[] headers)
+    {
+        this.headers = headers;
+    }
+
+    public Header[] getHeaders()
     {
         return headers;
     }
 
-    public byte[] content()
+    public String getContentString()
+    {
+        return getContentString(Charset.defaultCharset());
+    }
+
+    public String getContentString(Charset charset)
+    {
+        return new String(content, charset);
+    }
+
+    public byte[] getContent()
     {
         return content;
     }
 
-    public String stringContent()
+    public void setContentString(String content)
     {
-        return stringContent(Charset.defaultCharset());
+        this.setContentString(content, Charset.defaultCharset());
     }
 
-    public String stringContent(Charset charset)
+    public void setContentString(String content, Charset charset)
     {
-        return new String(content(), charset);
+        this.setContent(content.getBytes(charset));
     }
 
-    public Cookie[] cookies()
+    public void setContent(byte[] content)
+    {
+        this.content = content;
+    }
+
+    public String getParam(String name)
+    {
+        return params.get(name);
+    }
+
+    public Map<String, String> getParams()
+    {
+        return params;
+    }
+
+    public Cookie getCookie(String name)
+    {
+        for (Cookie cookie : cookies)
+        {
+            if (cookie.getName().equalsIgnoreCase(name))
+            {
+                return cookie;
+            }
+        }
+
+        return null;
+    }
+
+    public String getCookieValue(String name)
+    {
+        Cookie cookie = getCookie(name);
+
+        if (cookie == null)
+        {
+            return null;
+        }
+
+        return cookie.getValue();
+    }
+
+    public Cookie[] getCookies()
     {
         return cookies;
     }
 
-    public Cookie cookie(String name)
+    public void setCookies(Cookie[] cookies)
     {
-        return Stream.of(cookies).filter(c -> c.name.equalsIgnoreCase(name)).findFirst().orElse(null);
+        this.cookies = cookies;
     }
 
-    public String cookieValue(String name)
+    public Session getSession()
     {
-        Cookie cookie = cookie(name);
-        return cookie == null ? null : cookie.value;
-    }
-
-    public Session session(Response response)
-    {
-        return paladin.getSessionManager().get(this, response);
-    }
-
-    @Override
-    public String toString()
-    {
-        StringBuilder result = new StringBuilder(method() + " " + uri() + (content.length > 0 ? "(with " + content.length + " bytes of data)" : ""));
-
-        if (params.size() > 0)
-        {
-            params.forEach((k, v) -> {
-                result.append("\n    ").append(k).append("= ").append(v);
-            });
-            result.append("\n");
-        }
-
-        for (Header header : headers())
-        {
-            result.append("\n    ").append(header);
-        }
-
-        return result.toString();
+        return getPaladin().getSessionManager().get(this);
     }
 }

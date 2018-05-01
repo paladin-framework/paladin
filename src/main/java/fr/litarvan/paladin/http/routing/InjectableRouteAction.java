@@ -38,7 +38,7 @@ public abstract class InjectableRouteAction implements RouteAction
             for (int k = 0; k < requestParams.length; i = k++)
             {
                 String name = requestParams[i];
-                String result = request.param(name);
+                String result = request.getParam(name);
 
                 if (result == null)
                 {
@@ -102,7 +102,7 @@ public abstract class InjectableRouteAction implements RouteAction
             }
         }
 
-        Session session = request.session(response);
+        Session session = request.getSession();
 
         for (; i < results.length; i++)
         {
@@ -120,7 +120,7 @@ public abstract class InjectableRouteAction implements RouteAction
             {
                 try
                 {
-                    result = request.paladin().getInjector().getInstance(type);
+                    result = request.getPaladin().getInjector().getInstance(type);
                 }
                 catch (Exception ignored)
                 {

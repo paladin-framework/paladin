@@ -1,5 +1,6 @@
 package fr.litarvan.paladin;
 
+import com.google.inject.Module;
 import fr.litarvan.paladin.dsl.ConfigScriptBase;
 import fr.litarvan.paladin.dsl.RoutesScriptBase;
 import fr.litarvan.paladin.http.Controller;
@@ -14,6 +15,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,18 +23,28 @@ import java.util.function.Consumer;
 
 public class PaladinBuilder
 {
+    private Class<? extends App> app;
     private File configFolder;
     private File routesFile;
     private String controllersAt;
+    private List<Module> modules;
 
-    private PaladinBuilder()
+    private PaladinBuilder(Class<? extends App> app)
     {
+        this.app = app;
         this.controllersAt = "app.controllers";
+        this.modules = new ArrayList<>();
     }
 
-    public static PaladinBuilder create()
+    public static PaladinBuilder create(Class<? extends App> app)
     {
-        return new PaladinBuilder();
+        return new PaladinBuilder(app);
+    }
+
+    public PaladinBuilder addModule(Module... module)
+    {
+        this.modules.addAll(Arrays.asList(module));
+        return this;
     }
 
     public PaladinBuilder setConfigFolder(File configFolder)
@@ -100,7 +112,7 @@ public class PaladinBuilder
         }
 
         ConfigManager configManager = new ConfigManager(configs);
-        Paladin paladin = new Paladin(configManager);
+        Paladin paladin = new Paladin(app, configManager, modules.toArray(new Module[0]));
 
         Object object = configManager.at(controllersAt);
 

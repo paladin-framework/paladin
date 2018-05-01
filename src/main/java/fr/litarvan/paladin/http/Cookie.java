@@ -16,9 +16,9 @@ public class Cookie
     public static final String VALUE_STRICT = "Strict";
     public static final String VALUE_LAX = "Lax";
 
-    public final String name;
-    public final String value;
-    public final Map<String, String> params;
+    private String name;
+    private String value;
+    private Map<String, String> params;
 
     public Cookie(String name, String value)
     {
@@ -27,13 +27,49 @@ public class Cookie
         this.params = new HashMap<>();
     }
 
-    public void set(String key, String value)
+    public String getName()
+    {
+        return name;
+    }
+
+    public void setName(String name)
+    {
+        this.name = name;
+    }
+
+    public String getValue()
+    {
+        return value;
+    }
+
+    public void setValue(String value)
+    {
+        this.value = value;
+    }
+
+    public void setParam(String key, String value)
     {
         params.put(key, value);
     }
 
-    public void set(String key)
+    public void setParam(String key)
     {
-        set(key, null);
+        setParam(key, null);
+    }
+
+    public String getParam(String key)
+    {
+        return params.get(key);
+    }
+
+    public Map<String, String> getParams()
+    {
+        return params;
+    }
+
+    @Override
+    public String toString()
+    {
+        return name + "=" + value;
     }
 }
