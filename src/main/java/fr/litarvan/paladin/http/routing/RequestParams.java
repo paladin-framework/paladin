@@ -9,5 +9,6 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface RequestParams
 {
-    String[] value();
+    String[] required();
+    String[] optional() default {};
 }

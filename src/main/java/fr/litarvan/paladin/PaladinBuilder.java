@@ -4,6 +4,8 @@ import com.google.inject.Module;
 import fr.litarvan.paladin.dsl.ConfigScriptBase;
 import fr.litarvan.paladin.dsl.RoutesScriptBase;
 import fr.litarvan.paladin.http.Controller;
+import fr.litarvan.paladin.http.Middleware;
+
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import groovy.lang.Script;
@@ -19,6 +21,7 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public class PaladinBuilder
@@ -27,12 +30,16 @@ public class PaladinBuilder
     private File configFolder;
     private File routesFile;
     private String controllersAt;
+    private String middlewaresAt;
+    private String globalMiddlewaresAt;
     private List<Module> modules;
 
     private PaladinBuilder(Class<? extends App> app)
     {
         this.app = app;
         this.controllersAt = "app.controllers";
+        this.middlewaresAt = "app.routeMiddlewares";
+        this.globalMiddlewaresAt = "app.globalMiddlewares";
         this.modules = new ArrayList<>();
     }
 
@@ -85,6 +92,18 @@ public class PaladinBuilder
         return this;
     }
 
+    public PaladinBuilder setMiddlewaresAt(String middlewaresAt)
+    {
+        this.middlewaresAt = middlewaresAt;
+        return this;
+    }
+
+    public PaladinBuilder setGlobalMiddlewaresAt(String globalMiddlewaresAt)
+    {
+        this.globalMiddlewaresAt = globalMiddlewaresAt;
+        return this;
+    }
+
     public Paladin build()
     {
         List<Config> configs = new ArrayList<>();
@@ -114,40 +133,9 @@ public class PaladinBuilder
         ConfigManager configManager = new ConfigManager(configs);
         Paladin paladin = new Paladin(app, configManager, modules.toArray(new Module[0]));
 
-        Object object = configManager.at(controllersAt);
-
-        if (object == null)
-        {
-            throw new IllegalArgumentException("Can't find config entry #" + controllersAt);
-        }
-
-        if (!(object instanceof Map))
-        {
-            throw new IllegalArgumentException("#" + controllersAt + " isn't a map");
-        }
-
-        Map<?, ?> controllers = (Map) object;
-
-        controllers.forEach((k, v) -> {
-            if (!(k instanceof String))
-            {
-                throw new IllegalArgumentException("Controllers map (#" + controllersAt + ") contains non-String key '" + k.toString() + "'");
-            }
-
-            if (!(v instanceof Class))
-            {
-                throw new IllegalArgumentException("#" + controllersAt + "." + k + " isn't a class");
-            }
-
-            Class cl = (Class) v;
-
-            if (!Controller.class.isAssignableFrom(cl))
-            {
-                throw new IllegalArgumentException("#" + controllersAt + "." + k + " (" + cl.getName() + ") doesn't extend " + Controller.class.getName());
-            }
-
-            paladin.addController((String) k, (Class<? extends Controller>) v);
-        });
+        loadMap(configManager, controllersAt, Controller.class, paladin::addController);
+        loadMap(configManager, middlewaresAt, Middleware.class, paladin::addMiddleware);
+        loadArray(configManager, globalMiddlewaresAt, Middleware.class, paladin::addGlobalMiddleware);
 
         if (routesFile != null)
         {
@@ -155,6 +143,79 @@ public class PaladinBuilder
         }
 
         return paladin;
+    }
+
+    protected <T> void loadMap(ConfigManager configManager, String at, Class<T> type, BiConsumer<String, Class<T>> action)
+    {
+        Object object = configManager.at(at);
+
+        if (object == null)
+        {
+            throw new IllegalArgumentException("Can't find config entry #" + at);
+        }
+
+        if (!(object instanceof Map))
+        {
+            throw new IllegalArgumentException("#" + at + " isn't a map");
+        }
+
+        Map<?, ?> objects = (Map) object;
+
+        objects.forEach((k, v) -> {
+            if (!(k instanceof String))
+            {
+                throw new IllegalArgumentException("Map (#" + at + ") contains non-String key '" + k.toString() + "'");
+            }
+
+            if (!(v instanceof Class))
+            {
+                throw new IllegalArgumentException("#" + at + "." + k + " isn't a class");
+            }
+
+            Class cl = (Class) v;
+
+            if (!type.isAssignableFrom(cl))
+            {
+                throw new IllegalArgumentException("#" + at + "." + k + " (" + cl.getName() + ") doesn't extend " + type.getName());
+            }
+
+            action.accept((String) k, (Class<T>) v);
+        });
+    }
+
+    protected <T> void loadArray(ConfigManager configManager, String at, Class<T> type, Consumer<Class<T>> action)
+    {
+        Object object = configManager.at(at);
+
+        if (object == null)
+        {
+            throw new IllegalArgumentException("Can't find config entry #" + at);
+        }
+
+        if (!object.getClass().isArray())
+        {
+            throw new IllegalArgumentException("#" + at + " isn't an array");
+        }
+
+        Object[] objects = (Object[]) object;
+
+        for (int i = 0; i < objects.length; i++)
+        {
+            Object value = objects[i];
+            if (!(value instanceof Class))
+            {
+                throw new IllegalArgumentException("#" + at + "[" + i + "] isn't a class");
+            }
+
+            Class cl = (Class) value;
+
+            if (!type.isAssignableFrom(cl))
+            {
+                throw new IllegalArgumentException("#" + at + "[" + i + "] (" + cl.getName() + ") doesn't extend " + type.getName());
+            }
+
+            action.accept((Class<T>) value);
+        }
     }
 
     protected Object evaluate(File script, Class<? extends Script> base, Consumer<Binding> bindingProvider)

@@ -22,12 +22,9 @@ public abstract class InjectableRouteAction implements RouteAction
         {
             if (annotation.annotationType() == RequestParams.class)
             {
-                requestParams = ((RequestParams) annotation).value();
-            }
-
-            if (annotation.annotationType() == OptionalParams.class)
-            {
-                optionalParams = ((OptionalParams) annotation).value();
+                requestParams = ((RequestParams) annotation).required();
+                optionalParams = ((RequestParams) annotation).optional();
+                break;
             }
         }
 
@@ -44,15 +41,12 @@ public abstract class InjectableRouteAction implements RouteAction
                 {
                     boolean optional = false;
 
-                    if (optionalParams != null)
+                    for (String param : optionalParams)
                     {
-                        for (String param : optionalParams)
+                        if (param.equalsIgnoreCase(name))
                         {
-                            if (param.equalsIgnoreCase(name))
-                            {
-                                optional = true;
-                                break;
-                            }
+                            optional = true;
+                            break;
                         }
                     }
 
@@ -62,7 +56,11 @@ public abstract class InjectableRouteAction implements RouteAction
                     }
                 }
 
-                if (types[i] == Object.class || types[i] == String.class)
+                if (result == null)
+                {
+                    results[i] = null;
+                }
+                else if (types[i] == Object.class || types[i] == String.class)
                 {
                     results[i] = result;
                 }
