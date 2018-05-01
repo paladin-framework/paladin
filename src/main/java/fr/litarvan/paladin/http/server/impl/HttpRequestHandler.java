@@ -1,9 +1,8 @@
 package fr.litarvan.paladin.http.server.impl;
 
-import fr.litarvan.paladin.Header;
+import fr.litarvan.paladin.http.Header;
 import fr.litarvan.paladin.Paladin;
 import fr.litarvan.paladin.http.*;
-import fr.litarvan.paladin.http.routing.Route;
 import org.apache.http.*;
 import org.apache.http.entity.BasicHttpEntity;
 import org.apache.http.message.BasicHeader;

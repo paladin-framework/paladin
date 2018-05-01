@@ -1,6 +1,7 @@
 package fr.litarvan.paladin;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import fr.litarvan.paladin.http.Header;
 import fr.litarvan.paladin.http.Request;
 import fr.litarvan.paladin.http.Response;
 import fr.litarvan.paladin.http.routing.RequestException;

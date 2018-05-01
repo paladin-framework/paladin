@@ -1,4 +1,4 @@
-package fr.litarvan.paladin;
+package fr.litarvan.paladin.http;
 
 import fr.litarvan.paladin.http.HeaderPair;
 

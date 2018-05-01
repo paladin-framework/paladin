@@ -1,6 +1,5 @@
 package fr.litarvan.paladin.http;
 
-import fr.litarvan.paladin.Header;
 import fr.litarvan.paladin.Paladin;
 import fr.litarvan.paladin.Session;
 

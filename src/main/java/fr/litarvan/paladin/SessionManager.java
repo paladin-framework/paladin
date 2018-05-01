@@ -8,11 +8,11 @@ import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.google.common.collect.Iterators;
 import com.google.common.io.BaseEncoding;
+import fr.litarvan.paladin.http.Header;
 import fr.litarvan.paladin.http.Request;
 
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.*;
 import java.util.function.IntFunction;

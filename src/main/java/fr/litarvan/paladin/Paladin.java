@@ -4,11 +4,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.google.common.primitives.Primitives;
-import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Module;
 import fr.litarvan.paladin.http.Controller;
+import fr.litarvan.paladin.http.Header;
 import fr.litarvan.paladin.http.Request;
 import fr.litarvan.paladin.http.Response;
 import fr.litarvan.paladin.http.routing.Route;
@@ -32,7 +32,7 @@ public class Paladin
 {
     private static final Logger log = LoggerFactory.getLogger("Paladin");
 
-    public static final String VERSION = "1.0.0";
+    public static final String VERSION = "0.0.1";
     public static final String PORT_AT = "http.port";
     public static final String AUTH_ALGORITHM_AT = "http.authAlgorithm";
     public static final long SESSION_DEFAULT_EXPIRATION_DELAY = 15 * 24 * 60 * 60 * 1000; // 15 days
