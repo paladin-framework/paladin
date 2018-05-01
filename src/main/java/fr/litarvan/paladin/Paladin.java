@@ -123,49 +123,54 @@ public class Paladin
 
     public void execute(Request request, Response response)
     {
-        Object result;
+        Object result = null;
 
         List<Middleware> middlewares = new ArrayList<>();
         middlewares.addAll(globalMiddlewares);
 
-        try
-        {
-            Route route = getRouter().match(request);
+        Route route = getRouter().match(request);
 
-            if (route == null)
+        if (route == null)
+        {
+            result = exceptionHandler.handle(new RouteNotFoundException("Can't find any route matching '" + request.getMethod() + " " + request.getUri() + "'"), request, response);
+        }
+        else
+        {
+            middlewares.addAll(Arrays.asList(route.getMiddlewares()));
+        }
+
+        BeforeEvent before = new BeforeEvent();
+        for (Middleware m : middlewares)
+        {
+            m.before(before, request, response, route);
+        }
+
+        if (before.isCancelled())
+        {
+            result = before.getResult();
+        }
+        else
+        {
+            if (route != null)
             {
-                throw new RouteNotFoundException("Can't find any route matching '" + request.getMethod() + " " + request.getUri() + "'");
+                try
+                {
+                    result = route.getAction().call(request, response);
+                }
+                catch (Exception e)
+                {
+                    result = exceptionHandler.handle(e, request, response);
+                }
             }
 
-            middlewares.addAll(Arrays.asList(route.getMiddlewares()));
+            AfterEvent after = new AfterEvent(result);
 
-            BeforeEvent before = new BeforeEvent();
             for (Middleware m : middlewares)
             {
-                m.before(before, request, response, route);
+                m.after(after, request, response, route);
             }
 
-            if (before.isCancelled())
-            {
-                result = before.getResult();
-            }
-            else
-            {
-                result = route.getAction().call(request, response);
-                AfterEvent after = new AfterEvent(result);
-
-                for (Middleware m : middlewares)
-                {
-                    m.after(after, request, response, route);
-                }
-
-                result = after.getResult();
-            }
-        }
-        catch (Exception e)
-        {
-            exceptionHandler.handle(e, request, response);
-            return;
+            result = after.getResult();
         }
 
         if (result instanceof byte[])

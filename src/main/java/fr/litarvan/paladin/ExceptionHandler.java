@@ -12,19 +12,10 @@ public class ExceptionHandler
 {
     private static final Logger log = LoggerFactory.getLogger("ExceptionHandler");
 
-    public void handle(Exception exception, Request request, Response response)
+    public Object handle(Exception exception, Request request, Response response)
     {
         // TODO: Save crash reports
         response.setContentType(Header.CONTENT_TYPE_JSON);
-
-        try
-        {
-            response.setContentString(request.getPaladin().getJSONMapper().writeValueAsString(new ExceptionContent(exception.getClass().getSimpleName(), exception.getMessage())));
-        }
-        catch (JsonProcessingException e)
-        {
-            log.error("Couldn't serialize exception message !", e);
-        }
 
         if (!(exception instanceof RequestException))
         {
@@ -33,6 +24,7 @@ public class ExceptionHandler
         }
 
         // TODO: Proper report
+        return new ExceptionContent(exception.getClass().getSimpleName(), exception.getMessage());
     }
 
     public static class ExceptionContent
