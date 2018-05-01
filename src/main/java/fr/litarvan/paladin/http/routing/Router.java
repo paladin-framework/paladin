@@ -71,6 +71,16 @@ public class Router
             }
         }
 
+        if (action instanceof Class)
+        {
+            if (!Controller.class.isAssignableFrom((Class) action))
+            {
+                throw new IllegalArgumentException(((Class) action).getName() + " does not extend fr.litarvan.paladin.http.Controller");
+            }
+
+            action = paladin.getInjector().getInstance((Class) action);
+        }
+
         if (action instanceof Controller)
         {
             controller = (Controller) action;

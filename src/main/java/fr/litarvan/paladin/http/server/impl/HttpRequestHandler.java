@@ -215,7 +215,7 @@ public class HttpRequestHandler implements HttpAsyncRequestHandler<HttpRequest>
 
             try
             {
-                params.put(URLDecoder.decode(split[0], Charset.defaultCharset().name()), URLDecoder.decode(split[1], Charset.defaultCharset().name()));
+                params.put(URLDecoder.decode(split[0], Charset.defaultCharset().name()), split.length > 1 ? URLDecoder.decode(split[1], Charset.defaultCharset().name()) : "");
             }
             catch (UnsupportedEncodingException e)
             {

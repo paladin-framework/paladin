@@ -2,6 +2,7 @@ package fr.litarvan.paladin;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.google.common.primitives.Primitives;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
@@ -24,6 +25,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import groovy.lang.GString;
 
 public class Paladin
 {
@@ -54,6 +57,10 @@ public class Paladin
     public Paladin(Class<? extends App> app, ConfigManager configManager, Module... guiceModules)
     {
         this.mapper = new ObjectMapper();
+
+        SimpleModule module = new SimpleModule();
+        module.addSerializer(GString.class, new GStringSerializer());
+        this.mapper.registerModule(module);
 
         this.configManager = configManager;
         this.router = new Router(this);

@@ -41,9 +41,19 @@ public class Session
         return (T) getData().get(type);
     }
 
+    public <T> T getAt(Class<T> type)
+    {
+        return get(type);
+    }
+
     public <T> void set(Class<T> type, T value)
     {
         getData().put(type, value);
+    }
+
+    public <T> void putAt(Class<T> type, T value)
+    {
+        set(type, value);
     }
 
     public boolean has(Class<?> key)

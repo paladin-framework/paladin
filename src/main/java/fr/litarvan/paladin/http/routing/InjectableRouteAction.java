@@ -35,7 +35,7 @@ public abstract class InjectableRouteAction implements RouteAction
 
         if (requestParams != null)
         {
-            for (int k = 0; k < requestParams.length; i = k++)
+            for (; i < requestParams.length; i++)
             {
                 String name = requestParams[i];
                 String result = request.getParam(name);
@@ -66,7 +66,7 @@ public abstract class InjectableRouteAction implements RouteAction
                 {
                     results[i] = result;
                 }
-                if (types[i] == int.class)
+                else if (types[i] == int.class)
                 {
                     try
                     {
@@ -107,14 +107,25 @@ public abstract class InjectableRouteAction implements RouteAction
         for (; i < results.length; i++)
         {
             Class type = types[i];
+            Object result = null;
 
             if (type == Session.class)
             {
-                results[i] = session;
-                continue;
+                result = session;
+            }
+            else if (type == Request.class)
+            {
+                result = request;
+            }
+            else if (type == Response.class)
+            {
+                result = response;
             }
 
-            Object result = session.get(type);
+            if (result == null)
+            {
+                result = session.get(type);
+            }
 
             if (result == null)
             {

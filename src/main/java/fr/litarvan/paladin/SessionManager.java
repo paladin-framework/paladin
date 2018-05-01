@@ -66,11 +66,11 @@ public class SessionManager implements Iterable<Session>
             }
             catch (SignatureVerificationException | TokenExpiredException e)
             {
-                return null;
+                token = null;
             }
         }
 
-        Session session = getByToken(token);
+        Session session = token == null ? null : getByToken(token);
 
         if (session == null)
         {
@@ -87,7 +87,7 @@ public class SessionManager implements Iterable<Session>
 
     public Session create()
     {
-        long expiresAt = expirationDelay <= 0 ? -1 : LocalDateTime.now().toEpochSecond(ZoneOffset.UTC) + expirationDelay;
+        long expiresAt = expirationDelay <= 0 ? -1 : LocalDateTime.now().toEpochSecond(ZoneOffset.UTC) * 1000 + expirationDelay;
 
         Session session = new Session(expiresAt, generateToken(expiresAt));
         this.sessions.add(session);

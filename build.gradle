@@ -6,6 +6,10 @@ apply plugin: 'java'
 
 sourceCompatibility = 1.8
 
+// Groovy interop
+sourceSets.main.java.srcDirs = []
+sourceSets.main.groovy.srcDirs += ["src/main/java"]
+
 repositories {
     mavenCentral()
 }
