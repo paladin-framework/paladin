@@ -11,29 +11,46 @@ import com.google.common.io.BaseEncoding;
 import fr.litarvan.paladin.http.Header;
 import fr.litarvan.paladin.http.Request;
 
+import java.io.UnsupportedEncodingException;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.function.IntFunction;
 
 public class SessionManager implements Iterable<Session>
 {
+    public static final long DEFAULT_SESSION_DURATION = TimeUnit.DAYS.toSeconds(30);
     public static final int ID_LENGTH = 64;
 
-    private Paladin paladin;
     private Random random;
+
+    private Paladin paladin;
     private Algorithm algorithm;
     private long expirationDelay;
+
     private List<Session> sessions;
 
-    public SessionManager(Paladin paladin, Algorithm algorithm, long expirationDelay)
+    public SessionManager(Paladin paladin)
     {
-        this.paladin = paladin;
         this.random = new SecureRandom();
-        this.algorithm = algorithm;
-        this.expirationDelay = expirationDelay;
+
+        this.paladin = paladin;
+        this.expirationDelay = DEFAULT_SESSION_DURATION;
         this.sessions = new ArrayList<>();
+
+        try
+        {
+            this.algorithm = Algorithm.HMAC256(generateKey(128));
+        }
+        catch (UnsupportedEncodingException e)
+        {
+            // Can happen very rarely, but it can
+
+            e.printStackTrace();
+            System.exit(0);
+        }
     }
 
     public void setExpirationDelay(long expirationDelay)
@@ -95,9 +112,9 @@ public class SessionManager implements Iterable<Session>
         return session;
     }
 
-    protected String generateKey()
+    protected String generateKey(int length)
     {
-        final byte[] buffer = new byte[ID_LENGTH];
+        final byte[] buffer = new byte[length];
         random.nextBytes(buffer);
 
         return BaseEncoding.base64Url().omitPadding().encode(buffer);
@@ -106,8 +123,8 @@ public class SessionManager implements Iterable<Session>
     protected String generateToken(long expiresAt)
     {
         return JWT.create()
-                  .withClaim("jti", generateKey())
-                  .withIssuer(paladin.getApp().getName() + " (Paladin)")
+                  .withClaim("jti", generateKey(ID_LENGTH))
+                  .withIssuer(paladin.getAppInfo().name() + " (Paladin)")
                   .withIssuedAt(new Date(System.currentTimeMillis()))
                   .withExpiresAt(expiresAt > 0 ? new Date(expiresAt) : null)
                   .sign(algorithm);

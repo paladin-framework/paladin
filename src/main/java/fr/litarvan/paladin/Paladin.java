@@ -21,6 +21,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -34,16 +37,14 @@ public class Paladin
     private static final Logger log = LoggerFactory.getLogger("Paladin");
 
     public static final String VERSION = "0.0.2";
-    public static final String PORT_AT = "http.port";
-    public static final String AUTH_ALGORITHM_AT = "http.authAlgorithm";
-    public static final long SESSION_DEFAULT_EXPIRATION_DELAY = 15 * 24 * 60 * 60 * 1000; // 15 days
 
-    private App app;
+    private Object app;
+    private PaladinApp appInfo;
+    private PaladinConfig config;
 
     private ObjectMapper mapper;
     private Injector injector;
 
-    private ConfigManager configManager;
     private Router router;
     private SessionManager sessionManager;
     private ExceptionHandler exceptionHandler;
@@ -52,12 +53,7 @@ public class Paladin
     private Map<String, Middleware> middlewares;
     private List<Middleware> globalMiddlewares;
 
-    public Paladin(Class<? extends App> app, Module... guiceModules)
-    {
-        this(app, new ConfigManager(), guiceModules);
-    }
-
-    public Paladin(Class<? extends App> app, ConfigManager configManager, Module... guiceModules)
+    public Paladin(Class<?> app, PaladinConfig config, Module... guiceModules)
     {
         this.mapper = new ObjectMapper();
 
@@ -65,9 +61,8 @@ public class Paladin
         module.addSerializer(GString.class, new GStringSerializer());
         this.mapper.registerModule(module);
 
-        this.configManager = configManager;
         this.router = new Router(this);
-        this.sessionManager = new SessionManager(this, configManager.at(AUTH_ALGORITHM_AT), SESSION_DEFAULT_EXPIRATION_DELAY);
+        this.sessionManager = new SessionManager(this);
         this.exceptionHandler = new ExceptionHandler();
 
         this.controllers = new HashMap<>();
@@ -78,25 +73,21 @@ public class Paladin
         modules.add(new PaladinGuiceModule(this));
 
         this.injector = Guice.createInjector(modules);
+
         this.app = injector.getInstance(app);
+        this.appInfo = app.getDeclaredAnnotation(PaladinApp.class);
+        this.config = config;
     }
 
     public void start()
     {
-        int port = configManager.at(PORT_AT, -1);
-
-        if (port == -1)
-        {
-            throw new IllegalStateException("Can't find valid http port at #" + PORT_AT);
-        }
-
-        start(new ApacheAsyncHttpServer(this, port));
+        start(new ApacheAsyncHttpServer(this, config.port));
     }
 
     public void start(PaladinHttpServer server)
     {
-        log.info("Starting {} v{} using Paladin v{}", app.getName(), app.getVersion(), VERSION);
-        app.onStart();
+        log.info("Starting {} v{} by '{}' using Paladin v{}", appInfo.name(), appInfo.version(), appInfo.author(), VERSION);
+        executeCallback(OnStart.class, app);
 
         try
         {
@@ -118,7 +109,42 @@ public class Paladin
         {
         }
 
+        executeCallback(OnStop.class, app);
         server.shutdown();
+    }
+
+    public void executeCallback(Class<? extends Annotation> annotation, Object object)
+    {
+        for (Method method : object.getClass().getMethods())
+        {
+            if (method.isAnnotationPresent(annotation))
+            {
+                boolean isProtected = method.isAccessible();
+
+                if (isProtected)
+                {
+                    method.setAccessible(true);
+                }
+
+                try
+                {
+                    method.invoke(object);
+                }
+                catch (IllegalAccessException ignored)
+                {
+                    // Can't happen
+                }
+                catch (InvocationTargetException e)
+                {
+                    throw new RuntimeException(e.getTargetException());
+                }
+
+                if (isProtected)
+                {
+                    method.setAccessible(false);
+                }
+            }
+        }
     }
 
     public void execute(Request request, Response response)
@@ -227,19 +253,24 @@ public class Paladin
         return this.globalMiddlewares.toArray(new Middleware[0]);
     }
 
-    public App getApp()
+    public Object getApp()
     {
         return app;
+    }
+
+    public PaladinApp getAppInfo()
+    {
+        return appInfo;
+    }
+
+    public PaladinConfig getConfig()
+    {
+        return config;
     }
 
     public Injector getInjector()
     {
         return injector;
-    }
-
-    public ConfigManager getConfigManager()
-    {
-        return configManager;
     }
 
     public Router getRouter()
