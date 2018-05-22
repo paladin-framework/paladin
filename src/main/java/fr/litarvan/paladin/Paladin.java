@@ -36,7 +36,7 @@ public class Paladin
 {
     private static final Logger log = LoggerFactory.getLogger("Paladin");
 
-    public static final String VERSION = "0.0.2";
+    public static final String VERSION = "1.0.0";
 
     private Object app;
     private PaladinApp appInfo;
@@ -62,7 +62,7 @@ public class Paladin
         this.mapper.registerModule(module);
 
         this.router = new Router(this);
-        this.sessionManager = new SessionManager(this);
+        this.sessionManager = new SessionManager(this, config.get("secret", String.class));
         this.exceptionHandler = new ExceptionHandler();
 
         this.controllers = new HashMap<>();
@@ -72,16 +72,16 @@ public class Paladin
         List<Module> modules = new ArrayList<>(Arrays.asList(guiceModules));
         modules.add(new PaladinGuiceModule(this));
 
-        this.injector = Guice.createInjector(modules);
+        this.config = config;
 
+        this.injector = Guice.createInjector(modules);
         this.app = injector.getInstance(app);
         this.appInfo = app.getDeclaredAnnotation(PaladinApp.class);
-        this.config = config;
     }
 
     public void start()
     {
-        start(new ApacheAsyncHttpServer(this, config.port));
+        start(new ApacheAsyncHttpServer(this, config.get("port", int.class)));
     }
 
     public void start(PaladinHttpServer server)

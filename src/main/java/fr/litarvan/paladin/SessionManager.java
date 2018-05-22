@@ -32,7 +32,7 @@ public class SessionManager implements Iterable<Session>
 
     private List<Session> sessions;
 
-    public SessionManager(Paladin paladin)
+    public SessionManager(Paladin paladin, String secret)
     {
         this.random = new SecureRandom();
 
@@ -42,7 +42,7 @@ public class SessionManager implements Iterable<Session>
 
         try
         {
-            this.algorithm = Algorithm.HMAC256(generateKey(128));
+            this.algorithm = Algorithm.HMAC256(secret);
         }
         catch (UnsupportedEncodingException e)
         {

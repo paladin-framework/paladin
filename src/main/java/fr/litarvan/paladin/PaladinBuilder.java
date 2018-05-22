@@ -5,8 +5,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,52 +19,122 @@ import groovy.lang.Script;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.CompilerConfiguration;
 
+import com.google.common.collect.Lists;
 import com.google.common.io.ByteStreams;
-import com.google.common.io.Files;
 import com.google.inject.Module;
 import fr.litarvan.paladin.dsl.ConfigScriptBase;
 import fr.litarvan.paladin.dsl.RoutesScriptBase;
 import fr.litarvan.paladin.http.Controller;
 import fr.litarvan.paladin.http.Middleware;
+import joptsimple.OptionParser;
+import joptsimple.OptionSet;
 
 public class PaladinBuilder
 {
     private Class<?> app;
     private List<Module> modules;
     private String configFolder;
+    private String defaultMainConfigPath;
     private String[] argv;
 
     private PaladinBuilder(Class<?> app)
     {
         this.app = app;
+        this.modules = new ArrayList<>();
         this.configFolder = "/config";
         this.argv = new String[]{};
     }
 
-    public PaladinBuilder create(Class<?> app)
+    public static PaladinBuilder create(Class<?> app)
     {
         return new PaladinBuilder(app);
     }
 
-    public void addModule(Module module)
+    public PaladinBuilder addModule(Module module)
     {
         modules.add(module);
+        return this;
     }
 
-    public void setConfigFolder(String folder)
+    public PaladinBuilder setConfigFolder(String folder)
     {
         this.configFolder = folder;
+        return this;
     }
 
-    public void loadCommandLineArguments(String[] argv)
+    public PaladinBuilder setDefaultMainConfigPath(String defaultMainConfigPath)
+    {
+        this.defaultMainConfigPath = defaultMainConfigPath;
+        return this;
+    }
+
+    public PaladinBuilder loadCommandLineArguments(String[] argv)
     {
         this.argv = argv;
+        return this;
     }
 
     public Paladin build()
     {
         LinkedHashMap appConfig = loadConfig("app");
-        Paladin paladin = new Paladin(app, new PaladinConfig(), modules.toArray(new Module[0]));
+
+        OptionParser parser = new OptionParser();
+        parser.accepts("config", "Set the config file used").withRequiredArg();
+        parser.accepts("port", "Set the http port").withRequiredArg().ofType(int.class);
+        parser.accepts("disable-logs", "Disable app logs writing");
+        parser.acceptsAll(Lists.newArrayList("h", "help"), "Display help and exit");
+        parser.acceptsAll(Lists.newArrayList("v", "version"), "Display version and exit");
+        parser.posixlyCorrect(true);
+
+        OptionSet result = parser.parse(argv);
+
+        if (result.has("h"))
+        {
+            try
+            {
+                parser.printHelpOn(System.out);
+            }
+            catch (IOException ignored)
+            {
+            }
+
+            System.exit(0);
+        }
+
+        String configPath = defaultMainConfigPath;
+
+        if (result.has("config"))
+        {
+            configPath = (String) result.valueOf("config");
+        }
+
+        PaladinConfig config;
+        try
+        {
+            config = PaladinConfig.load(app, configPath);
+        }
+        catch (IOException e)
+        {
+            throw new IllegalArgumentException("Error loading config", e);
+        }
+
+        if (result.has("port"))
+        {
+            config.set("port", result.valueOf("port"));
+        }
+
+        if (result.has("disable-logs"))
+        {
+            config.set("disableLogs", true);
+        }
+
+        Paladin paladin = new Paladin(app, config, modules.toArray(new Module[0]));
+
+        if (result.has("v"))
+        {
+            System.out.println(paladin.getAppInfo().name() + "v" + paladin.getAppInfo().version() + " by " + paladin.getAppInfo().version());
+            System.exit(0);
+        }
 
         loadMap(appConfig, "controllers", Controller.class, paladin::addController);
         loadMap(appConfig, "routeMiddlewares", Middleware.class, paladin::addMiddleware);

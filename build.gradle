@@ -1,5 +1,5 @@
 group 'fr.litarvan.paladin'
-version '0.0.2'
+version '1.0.0'
 
 apply plugin: 'groovy'
 apply plugin: 'java'
