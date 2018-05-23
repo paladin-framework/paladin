@@ -140,9 +140,16 @@ public class PaladinBuilder
         loadMap(appConfig, "routeMiddlewares", Middleware.class, paladin::addMiddleware);
         loadArray(appConfig, "globalMiddlewares", Middleware.class, paladin::addGlobalMiddleware);
 
-        paladin.getSessionManager().setExpirationDelay((Long) appConfig.get("sessionDuration"));
+        Long val = (Long) appConfig.get("sessionDuration");
 
-        evaluate(load(configFolder + "/routes.config.groovy"), RoutesScriptBase.class, binding -> binding.setProperty("router", paladin.getRouter()));
+        if (val == null)
+        {
+            throw new IllegalArgumentException("Can't find field 'sessionDuration' in config");
+        }
+
+        paladin.getSessionManager().setExpirationDelay(val);
+
+        evaluate(load(configFolder + "/routes.groovy"), RoutesScriptBase.class, binding -> binding.setProperty("router", paladin.getRouter()));
 
         return paladin;
     }
@@ -244,16 +251,16 @@ public class PaladinBuilder
             throw new IllegalArgumentException("Can't find key '" + key + "' in config");
         }
 
-        if (!object.getClass().isArray())
+        if (!(object instanceof List))
         {
             throw new IllegalArgumentException("Config value with key '" + key + "' isn't an array");
         }
 
-        Object[] objects = (Object[]) object;
+        List objects = (List) object;
 
-        for (int i = 0; i < objects.length; i++)
+        for (int i = 0; i < objects.size(); i++)
         {
-            Object value = objects[i];
+            Object value = objects.get(i);
             if (!(value instanceof Class))
             {
                 throw new IllegalArgumentException("#" + key + "[" + i + "] isn't a class");

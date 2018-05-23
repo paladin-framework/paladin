@@ -6,6 +6,7 @@ import fr.litarvan.paladin.http.routing.Route
 import fr.litarvan.paladin.http.routing.Router
 
 import java.util.concurrent.ArrayBlockingQueue
+import java.util.stream.Stream
 
 abstract class RoutesScriptBase extends Script
 {
@@ -76,9 +77,13 @@ abstract class RoutesScriptBase extends Script
             options = it + options
         })
 
-        def middlewares = options['middleware'] as Middleware[] ?: new Middleware[0]
-        def action = (getProperty("router") as Router).createAction(method, path, options['action'])
+        def router = (getProperty('router') as Router)
 
-        (getProperty('router') as Router).register new Route(method, path, middlewares, action)
+        def action = (getProperty("router") as Router).createAction(method, path, options['action'])
+        def middlewares = (options['middleware'] as String[] ?: new String[0])
+            .collect({ router.paladin.getMiddleware(it) })
+            .toArray(new Middleware[0])
+
+        router.register new Route(method, path, middlewares, action)
     }
 }

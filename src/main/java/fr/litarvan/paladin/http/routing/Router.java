@@ -121,6 +121,11 @@ public class Router
         this.routes.add(route);
     }
 
+    public Paladin getPaladin()
+    {
+        return paladin;
+    }
+
     public List<Route> getRoutes()
     {
         return routes;
