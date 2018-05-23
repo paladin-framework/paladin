@@ -14,7 +14,6 @@ public class ExceptionHandler
 
     public Object handle(Exception exception, Request request, Response response)
     {
-        // TODO: Save crash reports
         response.setContentType(Header.CONTENT_TYPE_JSON);
 
         if (!(exception instanceof RequestException))
@@ -23,7 +22,6 @@ public class ExceptionHandler
             log.error("If you don't want this message to appear, the exception must extend RequestException");
         }
 
-        // TODO: Proper report
         return new ExceptionContent(exception.getClass().getSimpleName(), exception.getMessage());
     }
 
