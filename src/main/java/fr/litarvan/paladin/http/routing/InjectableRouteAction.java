@@ -97,6 +97,17 @@ public abstract class InjectableRouteAction implements RouteAction
                         throw new ParameterFormatException("Parameter '" + name + "' should be a " + Long.SIZE + "-bits integer number");
                     }
                 }
+                else if (types[i] == double.class)
+                {
+                    try
+                    {
+                        results[i] = Double.parseDouble(result);
+                    }
+                    catch (NumberFormatException e)
+                    {
+                        throw new ParameterFormatException("Parameter '" + name + "' should be a " + Double.SIZE + "-bits floating number");
+                    }
+                }
             }
         }
 

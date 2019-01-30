@@ -15,6 +15,9 @@ contributor(ctx) {
             params: [path: 'java.lang.String', action: 'groovy.lang.Closure', options: 'java.util.Map<String, ?>'],
             type: void
     method  name: 'get',
+            params: [path: 'java.lang.String', options: 'java.util.Map<String, ?>'],
+            type: void
+    method  name: 'get',
             params: [path: 'java.lang.String', action: 'fr.litarvan.paladin.http.RouteAction'],
             type: void
     method  name: 'get',
@@ -46,6 +49,9 @@ contributor(ctx) {
             params: [path: 'java.lang.String', action: 'groovy.lang.Closure', options: 'java.util.Map<String, ?>'],
             type: void
     method  name: 'post',
+            params: [path: 'java.lang.String', options: 'java.util.Map<String, ?>'],
+            type: void
+    method  name: 'post',
             params: [path: 'java.lang.String', action: 'fr.litarvan.paladin.http.RouteAction'],
             type: void
     method  name: 'post',
@@ -77,6 +83,9 @@ contributor(ctx) {
             params: [path: 'java.lang.String', action: 'groovy.lang.Closure', options: 'java.util.Map<String, ?>'],
             type: void
     method  name: 'put',
+            params: [path: 'java.lang.String', options: 'java.util.Map<String, ?>'],
+            type: void
+    method  name: 'put',
             params: [path: 'java.lang.String', action: 'fr.litarvan.paladin.http.RouteAction'],
             type: void
     method  name: 'put',
@@ -108,6 +117,9 @@ contributor(ctx) {
             params: [path: 'java.lang.String', action: 'groovy.lang.Closure', options: 'java.util.Map<String, ?>'],
             type: void
     method  name: 'delete',
+            params: [path: 'java.lang.String', options: 'java.util.Map<String, ?>'],
+            type: void
+    method  name: 'delete',
             params: [path: 'java.lang.String', action: 'fr.litarvan.paladin.http.RouteAction'],
             type: void
     method  name: 'delete',
@@ -137,6 +149,9 @@ contributor(ctx) {
             type: void
     method  name: 'all',
             params: [path: 'java.lang.String', action: 'groovy.lang.Closure', options: 'java.util.Map<String, ?>'],
+            type: void
+    method  name: 'all',
+            params: [path: 'java.lang.String', options: 'java.util.Map<String, ?>'],
             type: void
     method  name: 'all',
             params: [path: 'java.lang.String', action: 'fr.litarvan.paladin.http.RouteAction'],
@@ -196,6 +211,9 @@ contributor(ctx) {
             params: [path: 'java.lang.String', body: 'groovy.lang.Closure', options: 'java.util.Map<String, ?>'],
             type: void
 
+    method  name: 'route',
+            params: [method: 'fr.paladin.http.HttpMethod', path: 'java.lang.String', options: 'java.util.Map<String, ?>'],
+            type: void
     method  name: 'route',
             params: [method: 'fr.paladin.http.HttpMethod', path: 'java.lang.String', action: 'java.lang.String'],
             type: void
