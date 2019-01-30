@@ -205,6 +205,10 @@ contributor(ctx) {
             type: void*/
 
     method  name: 'group',
+            params: [body: 'groovy.lang.Closure'],
+            type: void
+
+    method  name: 'group',
             params: [path: 'java.lang.String', body: 'groovy.lang.Closure'],
             type: void
     method  name: 'group',
@@ -258,28 +262,38 @@ contributor(groupCtx) {
 
     if (call) {
         method  name: 'get',
+                type: void
+        method  name: 'get',
                 params: [path: 'java.lang.String'],
                 type: void
         method  name: 'get',
                 params: [path: 'java.lang.String', options: 'java.util.Map<String, ?>'],
                 type: void
         method  name: 'post',
+                type: void
+        method  name: 'post',
                 params: [path: 'java.lang.String'],
                 type: void
         method  name: 'post',
                 params: [path: 'java.lang.String', options: 'java.util.Map<String, ?>'],
                 type: void
         method  name: 'put',
+                type: void
+        method  name: 'put',
                 params: [path: 'java.lang.String'],
                 type: void
         method  name: 'put',
                 params: [path: 'java.lang.String', options: 'java.util.Map<String, ?>'],
                 type: void
         method  name: 'delete',
+                type: void
+        method  name: 'delete',
                 params: [path: 'java.lang.String'],
                 type: void
         method  name: 'delete',
                 params: [path: 'java.lang.String', options: 'java.util.Map<String, ?>'],
+                type: void
+        method  name: 'all',
                 type: void
         method  name: 'all',
                 params: [path: 'java.lang.String'],

@@ -40,8 +40,13 @@ abstract class RoutesScriptBase extends Script
         delete(path, actionOrOptions, options)
     }
 
-    void group(String path = null, Closure body, Map<String, ?> options = [:])
+    void group(pathOrBody = null, body, Map<String, ?> options = [:])
     {
+        if (pathOrBody instanceof Closure) {
+            options = body
+            body = pathOrBody
+        }
+
         if (path != null)
         {
             options['path'] = path
