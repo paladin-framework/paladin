@@ -165,17 +165,27 @@ public class Paladin
             middlewares.addAll(Arrays.asList(route.getMiddlewares()));
         }
 
+        boolean crashed = false;
+
         BeforeEvent before = new BeforeEvent();
         for (Middleware m : middlewares)
         {
-            m.before(before, request, response, route);
+			try
+			{
+				m.before(before, request, response, route);
+			}
+			catch (Exception e)
+			{
+				result = exceptionHandler.handle(e, request, response);
+				crashed = true;
+			}
         }
 
-        if (before.isCancelled())
+        if (!crashed && before.isCancelled())
         {
             result = before.getResult();
         }
-        else
+        else if (!crashed)
         {
             if (route != null)
             {
@@ -193,10 +203,21 @@ public class Paladin
 
             for (Middleware m : middlewares)
             {
-                m.after(after, request, response, route);
+				try
+				{
+					m.after(after, request, response, route);
+				}
+				catch (Exception e)
+				{
+					result = exceptionHandler.handle(e, request, response);
+					crashed = true;
+				}
             }
 
-            result = after.getResult();
+            if (!crashed)
+			{
+				result = after.getResult();
+			}
         }
 
         if (result instanceof byte[])
