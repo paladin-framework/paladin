@@ -10,6 +10,8 @@ public class Request
 {
     private Paladin paladin;
 
+    private String ip;
+
     private HttpMethod method;
     private String uri;
     private Header[] headers;
@@ -18,9 +20,10 @@ public class Request
     private Map<String, String> params;
     private Cookie[] cookies;
 
-    public Request(Paladin paladin, HttpMethod method, String uri, Header[] headers, byte[] content, Map<String, String> params, Cookie[] cookies)
+    public Request(Paladin paladin, String ip, HttpMethod method, String uri, Header[] headers, byte[] content, Map<String, String> params, Cookie[] cookies)
     {
         this.paladin = paladin;
+        this.ip = ip;
         this.method = method;
         this.uri = uri;
         this.headers = headers;
@@ -34,7 +37,17 @@ public class Request
         return paladin;
     }
 
-    public HttpMethod getMethod()
+	public String getIp()
+	{
+		return ip;
+	}
+
+	public void setIp(String ip)
+	{
+		this.ip = ip;
+	}
+
+	public HttpMethod getMethod()
     {
         return method;
     }

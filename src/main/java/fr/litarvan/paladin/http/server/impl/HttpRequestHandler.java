@@ -5,6 +5,7 @@ import fr.litarvan.paladin.Paladin;
 import fr.litarvan.paladin.http.*;
 import org.apache.http.*;
 import org.apache.http.entity.BasicHttpEntity;
+import org.apache.http.impl.nio.DefaultNHttpServerConnection;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.nio.protocol.*;
 import org.apache.http.protocol.HttpContext;
@@ -21,6 +22,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static org.apache.http.protocol.HttpCoreContext.*;
 
 public class HttpRequestHandler implements HttpAsyncRequestHandler<HttpRequest>
 {
@@ -42,7 +45,9 @@ public class HttpRequestHandler implements HttpAsyncRequestHandler<HttpRequest>
     {
         final HttpResponse httpResponse = httpExchange.getResponse();
 
-        Request request = createRequest(httpRequest);
+        String ip = ((DefaultNHttpServerConnection) context.getAttribute(HTTP_CONNECTION)).getRemoteAddress().getHostAddress();
+
+        Request request = createRequest(ip, httpRequest);
         Response response = createResponse(httpResponse);
 
         paladin.execute(request, response);
@@ -52,7 +57,7 @@ public class HttpRequestHandler implements HttpAsyncRequestHandler<HttpRequest>
         httpExchange.submitResponse();
     }
 
-    public Request createRequest(HttpRequest request) throws IOException
+    public Request createRequest(String ip, HttpRequest request) throws IOException
     {
         HttpMethod method = HttpMethod.valueOf(request.getRequestLine().getMethod().toUpperCase());
         String uri = request.getRequestLine().getUri();
@@ -123,7 +128,7 @@ public class HttpRequestHandler implements HttpAsyncRequestHandler<HttpRequest>
             extractParams(params, new String(data, Charset.defaultCharset()));
         }
 
-        return new Request(paladin, method, uri, headers, data, params, cookies);
+        return new Request(paladin, ip, method, uri, headers, data, params, cookies);
     }
 
     public Response createResponse(HttpResponse httpResponse)
