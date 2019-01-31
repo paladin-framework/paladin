@@ -47,9 +47,9 @@ abstract class RoutesScriptBase extends Script
             body = pathOrBody
         }
 
-        if (path != null)
+        if (pathOrBody != null)
         {
-            options['path'] = path
+            options['path'] = pathOrBody
         }
 
         groupStack.put(options)
