@@ -10,7 +10,7 @@ import java.util.stream.Stream
 
 abstract class RoutesScriptBase extends Script
 {
-    def groupStack = new ArrayBlockingQueue(10)
+    def groupStack = new ArrayList()
 
     void get(String path, actionOrOptions = null, Map<String, ?> options = [:])
     {
@@ -52,9 +52,9 @@ abstract class RoutesScriptBase extends Script
             options['path'] = pathOrBody
         }
 
-        groupStack.put(options)
+        groupStack.add(options)
         body.call()
-        groupStack.poll()
+        groupStack.remove(groupStack.size() - 1)
     }
 
     void route(HttpMethod method, String path, actionOrOptions = null, Map<String, ?> options = [:])
@@ -81,6 +81,10 @@ abstract class RoutesScriptBase extends Script
 
             options = it + options
         })
+
+        if (options['middleware'] instanceof String) {
+            options['middleware'] = [options['middleware'] as String]
+        }
 
         def router = (getProperty('router') as Router)
 
