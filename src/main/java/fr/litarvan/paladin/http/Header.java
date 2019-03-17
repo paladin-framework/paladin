@@ -17,6 +17,8 @@ public class Header
     public static final String SET_COOKIE = "Set-Cookie";
     public static final String COOKIE = "Cookie";
     public static final String AUTHORIZATION = "Authorization";
+    public static final String PALADIN_TOKEN = "Paladin-Token";
+
     public static final String CONTENT_TYPE_PLAIN = "text/plain";
     public static final String CONTENT_TYPE_STREAM = "application/octet-stream";
     public static final String CONTENT_TYPE_FORM_DATA = "multipart/form-data";

@@ -8,23 +8,27 @@ import java.lang.annotation.Annotation;
 
 public abstract class InjectableRouteAction implements RouteAction
 {
+    private String[] requestParams = null;
+    private String[] optionalParams = null;
+
     @Override
     public Object call(Request request, Response response) throws Exception
     {
         Class[] types = getTypes();
         Object[] results = new Object[types.length];
 
-        String[] requestParams = null;
-        String[] optionalParams = null;
-
-        Annotation[] annotations = getAnnotations();
-        for (Annotation annotation : annotations)
+        if (requestParams == null && optionalParams == null)
         {
-            if (annotation.annotationType() == RequestParams.class)
+            Annotation[] annotations = getAnnotations();
+
+            for (Annotation annotation : annotations)
             {
-                requestParams = ((RequestParams) annotation).required();
-                optionalParams = ((RequestParams) annotation).optional();
-                break;
+                if (annotation.annotationType() == RequestParams.class)
+                {
+                    requestParams = ((RequestParams) annotation).required();
+                    optionalParams = ((RequestParams) annotation).optional();
+                    break;
+                }
             }
         }
 
@@ -63,6 +67,28 @@ public abstract class InjectableRouteAction implements RouteAction
                 else if (types[i] == Object.class || types[i] == String.class)
                 {
                     results[i] = result;
+                }
+                else if (types[i] == byte.class)
+                {
+                    try
+                    {
+                        results[i] = Byte.parseByte(result);
+                    }
+                    catch (NumberFormatException e)
+                    {
+                        throw new ParameterFormatException("Parameter '" + name + "' should be a " + Byte.SIZE + "-bits integer number");
+                    }
+                }
+                else if (types[i] == short.class)
+                {
+                    try
+                    {
+                        results[i] = Short.parseShort(result);
+                    }
+                    catch (NumberFormatException e)
+                    {
+                        throw new ParameterFormatException("Parameter '" + name + "' should be a " + Short.SIZE + "-bits integer number");
+                    }
                 }
                 else if (types[i] == int.class)
                 {

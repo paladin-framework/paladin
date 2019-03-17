@@ -20,7 +20,9 @@ public class Request
     private Map<String, String> params;
     private Cookie[] cookies;
 
-    public Request(Paladin paladin, String ip, HttpMethod method, String uri, Header[] headers, byte[] content, Map<String, String> params, Cookie[] cookies)
+    private Response response;
+
+    public Request(Paladin paladin, String ip, HttpMethod method, String uri, Header[] headers, byte[] content, Map<String, String> params, Cookie[] cookies, Response response)
     {
         this.paladin = paladin;
         this.ip = ip;
@@ -30,6 +32,7 @@ public class Request
         this.content = content;
         this.params = params;
         this.cookies = cookies;
+        this.response = response;
     }
 
     public Paladin getPaladin()
@@ -179,6 +182,6 @@ public class Request
 
     public Session getSession()
     {
-        return getPaladin().getSessionManager().get(this);
+        return getPaladin().getSessionManager().get(this, response);
     }
 }

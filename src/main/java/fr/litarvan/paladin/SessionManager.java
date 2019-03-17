@@ -1,17 +1,11 @@
 package fr.litarvan.paladin;
 
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.JWTVerifier;
-import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.exceptions.SignatureVerificationException;
-import com.auth0.jwt.exceptions.TokenExpiredException;
-import com.auth0.jwt.interfaces.DecodedJWT;
 import com.google.common.collect.Iterators;
 import com.google.common.io.BaseEncoding;
 import fr.litarvan.paladin.http.Header;
 import fr.litarvan.paladin.http.Request;
+import fr.litarvan.paladin.http.Response;
 
-import java.io.UnsupportedEncodingException;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -22,35 +16,20 @@ import java.util.function.IntFunction;
 public class SessionManager implements Iterable<Session>
 {
     public static final long DEFAULT_SESSION_DURATION = TimeUnit.DAYS.toSeconds(30);
-    public static final int ID_LENGTH = 64;
+    public static final int TOKEN_LENGTH = 64;
 
     private Random random;
 
-    private Paladin paladin;
-    private Algorithm algorithm;
     private long expirationDelay;
 
     private List<Session> sessions;
 
-    public SessionManager(Paladin paladin, String secret)
+    public SessionManager()
     {
         this.random = new SecureRandom();
 
-        this.paladin = paladin;
         this.expirationDelay = DEFAULT_SESSION_DURATION;
         this.sessions = new ArrayList<>();
-
-        try
-        {
-            this.algorithm = Algorithm.HMAC256(secret);
-        }
-        catch (UnsupportedEncodingException e)
-        {
-            // Can happen very rarely, but it can
-
-            e.printStackTrace();
-            System.exit(0);
-        }
     }
 
     public void setExpirationDelay(long expirationDelay)
@@ -63,7 +42,7 @@ public class SessionManager implements Iterable<Session>
         return expirationDelay;
     }
 
-    public Session get(Request request)
+    public Session get(Request request, Response response)
     {
         String token = request.getHeaderValue(Header.AUTHORIZATION);
 
@@ -73,18 +52,6 @@ public class SessionManager implements Iterable<Session>
             {
                 token = token.substring(7);
             }
-
-            try
-            {
-                JWTVerifier verifier = JWT.require(algorithm).build();
-                DecodedJWT jwt = verifier.verify(token);
-
-                token = jwt.getToken();
-            }
-            catch (SignatureVerificationException | TokenExpiredException e)
-            {
-                token = null;
-            }
         }
 
         Session session = token == null ? null : getByToken(token);
@@ -92,6 +59,7 @@ public class SessionManager implements Iterable<Session>
         if (session == null)
         {
             session = create();
+            response.addHeader(Header.PALADIN_TOKEN, session.getToken());
         }
 
         return session;
@@ -106,28 +74,18 @@ public class SessionManager implements Iterable<Session>
     {
         long expiresAt = expirationDelay <= 0 ? -1 : LocalDateTime.now().toEpochSecond(ZoneOffset.UTC) * 1000 + expirationDelay;
 
-        Session session = new Session(expiresAt, generateToken(expiresAt));
+        Session session = new Session(expiresAt, generateToken(TOKEN_LENGTH));
         this.sessions.add(session);
 
         return session;
     }
 
-    protected String generateKey(int length)
+    protected String generateToken(int length)
     {
         final byte[] buffer = new byte[length];
         random.nextBytes(buffer);
 
         return BaseEncoding.base64Url().omitPadding().encode(buffer);
-    }
-
-    protected String generateToken(long expiresAt)
-    {
-        return JWT.create()
-                  .withClaim("jti", generateKey(ID_LENGTH))
-                  .withIssuer(paladin.getAppInfo().name() + " (Paladin)")
-                  .withIssuedAt(new Date(System.currentTimeMillis()))
-                  .withExpiresAt(expiresAt > 0 ? new Date(expiresAt) : null)
-                  .sign(algorithm);
     }
 
     protected List<Session> sessions()

@@ -1,5 +1,4 @@
 {
   "port": 8080,
-  "disableLogs": false,
-  "secret": "YOUR_APP_SECRET"
+  "disableLogs": false
 }

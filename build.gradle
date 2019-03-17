@@ -23,7 +23,7 @@ dependencies {
     compile 'org.apache.httpcomponents:httpcore-nio:4.4.9'
     compile 'org.codehaus.groovy:groovy-all:2.3.11'
     compile 'com.google.inject:guice:4.1.0'
-    compile 'com.auth0:java-jwt:3.3.0'
+    compile 'com.fasterxml.jackson.core:jackson-databind:2.9.8'
 }
 
 jar {

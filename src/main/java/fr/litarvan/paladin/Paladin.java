@@ -62,7 +62,7 @@ public class Paladin
         this.mapper.registerModule(module);
 
         this.router = new Router(this);
-        this.sessionManager = new SessionManager(this, config.get("secret", String.class));
+        this.sessionManager = new SessionManager();
         this.exceptionHandler = new ExceptionHandler();
 
         this.controllers = new HashMap<>();

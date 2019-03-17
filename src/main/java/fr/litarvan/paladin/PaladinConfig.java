@@ -23,6 +23,11 @@ public class PaladinConfig
         this.content = content;
     }
 
+    public String get(String key)
+    {
+        return get(key, String.class);
+    }
+
     public <T> T get(String key, Class<T> type)
     {
         JsonNode value = content.get(key);
