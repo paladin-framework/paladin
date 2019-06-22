@@ -44,91 +44,24 @@ public abstract class InjectableRouteAction implements RouteAction
                 String name = !optional ? requiredParams[i] : optionalParams[i - requiredParams.length];
                 String result = request.getParam(name);
 
+                Class optType = null;
+
+                if (optional && name.contains(":")) {
+                    String[] split = name.split(":");
+
+                    optType = Class.forName(split[0]);
+                    name = split[1];
+
+                }
+
                 if (result == null && !optional)
                 {
                     throw new ParameterMissingException("Missing parameter '" + name + "'");
                 }
 
-                if (result == null)
-                {
-                    results[i] = null;
-                }
-                else if (types[i] == Object.class || types[i] == String.class)
-                {
-                    results[i] = result;
-                }
-                else if (types[i] == byte.class)
-                {
-                    try
-                    {
-                        results[i] = Byte.parseByte(result);
-                    }
-                    catch (NumberFormatException e)
-                    {
-                        throw new ParameterFormatException("Parameter '" + name + "' should be a " + Byte.SIZE + "-bits integer number");
-                    }
-                }
-                else if (types[i] == short.class)
-                {
-                    try
-                    {
-                        results[i] = Short.parseShort(result);
-                    }
-                    catch (NumberFormatException e)
-                    {
-                        throw new ParameterFormatException("Parameter '" + name + "' should be a " + Short.SIZE + "-bits integer number");
-                    }
-                }
-                else if (types[i] == int.class)
-                {
-                    try
-                    {
-                        results[i] = Integer.parseInt(result);
-                    }
-                    catch (NumberFormatException e)
-                    {
-                        throw new ParameterFormatException("Parameter '" + name + "' should be a " + Integer.SIZE + "-bits integer number");
-                    }
-                }
-                else if (types[i] == float.class)
-                {
-                    try
-                    {
-                        results[i] = Float.parseFloat(result);
-                    }
-                    catch (NumberFormatException e)
-                    {
-                        throw new ParameterFormatException("Parameter '" + name + "' should be a " + Float.SIZE + "-bits floating number");
-                    }
-                }
-                else if (types[i] == long.class)
-                {
-                    try
-                    {
-                        results[i] = Long.parseLong(result);
-                    }
-                    catch (NumberFormatException e)
-                    {
-                        throw new ParameterFormatException("Parameter '" + name + "' should be a " + Long.SIZE + "-bits integer number");
-                    }
-                }
-                else if (types[i] == double.class)
-                {
-                    try
-                    {
-                        results[i] = Double.parseDouble(result);
-                    }
-                    catch (NumberFormatException e)
-                    {
-                        throw new ParameterFormatException("Parameter '" + name + "' should be a " + Double.SIZE + "-bits floating number");
-                    }
-                }
-                else
-                {
-                    continue;
-                }
+                results[i] = parse(name, result, optType != null ? optType : types[i]);
 
-                if (optional)
+                if (types[i] == Optional.class)
                 {
                     results[i] = Optional.of(results[i]);
                 }
@@ -175,6 +108,86 @@ public abstract class InjectableRouteAction implements RouteAction
         }
 
         return call(results);
+    }
+    
+    protected Object parse(String name, String value, Class type) throws ParameterFormatException, IllegalArgumentException
+    {
+        if (value == null)
+        {
+            return null;
+        }
+        else if (type == Object.class || type == String.class)
+        {
+            return value;
+        }
+        else if (type == byte.class)
+        {
+            try
+            {
+                return Byte.parseByte(value);
+            }
+            catch (NumberFormatException e)
+            {
+                throw new ParameterFormatException("Parameter '" + name + "' should be a " + Byte.SIZE + "-bits integer number");
+            }
+        }
+        else if (type == short.class)
+        {
+            try
+            {
+                return Short.parseShort(value);
+            }
+            catch (NumberFormatException e)
+            {
+                throw new ParameterFormatException("Parameter '" + name + "' should be a " + Short.SIZE + "-bits integer number");
+            }
+        }
+        else if (type == int.class)
+        {
+            try
+            {
+                return Integer.parseInt(value);
+            }
+            catch (NumberFormatException e)
+            {
+                throw new ParameterFormatException("Parameter '" + name + "' should be a " + Integer.SIZE + "-bits integer number");
+            }
+        }
+        else if (type == float.class)
+        {
+            try
+            {
+                return Float.parseFloat(value);
+            }
+            catch (NumberFormatException e)
+            {
+                throw new ParameterFormatException("Parameter '" + name + "' should be a " + Float.SIZE + "-bits floating number");
+            }
+        }
+        else if (type == long.class)
+        {
+            try
+            {
+                return Long.parseLong(value);
+            }
+            catch (NumberFormatException e)
+            {
+                throw new ParameterFormatException("Parameter '" + name + "' should be a " + Long.SIZE + "-bits integer number");
+            }
+        }
+        else if (type == double.class)
+        {
+            try
+            {
+                return Double.parseDouble(value);
+            }
+            catch (NumberFormatException e)
+            {
+                throw new ParameterFormatException("Parameter '" + name + "' should be a " + Double.SIZE + "-bits floating number");
+            }
+        }
+
+        return null;
     }
 
     protected abstract Object call(Object[] args) throws Exception;
