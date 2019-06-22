@@ -41,7 +41,7 @@ public abstract class InjectableRouteAction implements RouteAction
             {
                 boolean optional = i >= requiredParams.length;
 
-                String name = !optional ? requiredParams[i] : optionalParams[i];
+                String name = !optional ? requiredParams[i] : optionalParams[i - requiredParams.length];
                 String result = request.getParam(name);
 
                 if (result == null && !optional)
