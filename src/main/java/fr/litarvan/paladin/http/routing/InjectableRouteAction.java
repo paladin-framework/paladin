@@ -49,7 +49,7 @@ public abstract class InjectableRouteAction implements RouteAction
                 if (optional && name.contains(":")) {
                     String[] split = name.split(":");
 
-                    optType = Class.forName(split[0]);
+                    optType = parseClass(split[0]);
                     name = split[1];
 
                 }
@@ -188,6 +188,32 @@ public abstract class InjectableRouteAction implements RouteAction
         }
 
         return null;
+    }
+
+    protected Class parseClass(String name) throws ClassNotFoundException
+    {
+        switch (name)
+        {
+            case "boolean":
+                return boolean.class;
+            case "byte":
+                return byte.class;
+            case "short":
+                return short.class;
+            case "int":
+                return int.class;
+            case "long":
+                return long.class;
+            case "float":
+                return float.class;
+            case "double":
+                return double.class;
+            case "char":
+                return char.class;
+            default:
+                return Class.forName(name.contains(".") ? name : "java.lang." + name);
+
+        }
     }
 
     protected abstract Object call(Object[] args) throws Exception;
