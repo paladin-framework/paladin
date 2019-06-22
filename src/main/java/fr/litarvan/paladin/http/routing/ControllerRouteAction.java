@@ -33,9 +33,12 @@ public class ControllerRouteAction extends InjectableRouteAction
             String content = request.getContentString();
             JsonNode tree = mapper.readTree(content);
 
-            tree.fields().forEachRemaining(entry -> {
-                request.getParams().put(entry.getKey(), entry.getValue().toString());
-            });
+            if (tree != null) {
+                tree.fields().forEachRemaining(entry -> {
+                    JsonNode value = entry.getValue();
+                    request.getParams().put(entry.getKey(), value.isTextual() ? value.textValue() : value.toString());
+                });
+            }
         }
 
         return super.call(request, response);
