@@ -42,7 +42,6 @@ public abstract class InjectableRouteAction implements RouteAction
                 boolean optional = i >= requiredParams.length;
 
                 String name = !optional ? requiredParams[i] : optionalParams[i - requiredParams.length];
-                String result = request.getParam(name);
 
                 Class optType = null;
 
@@ -53,17 +52,19 @@ public abstract class InjectableRouteAction implements RouteAction
                     name = split[1];
 
                 }
+                
+                String result = request.getParam(name);
 
                 if (result == null && !optional)
                 {
                     throw new ParameterMissingException("Missing parameter '" + name + "'");
                 }
-
+                
                 results[i] = parse(name, result, optType != null ? optType : types[i]);
 
                 if (types[i] == Optional.class)
                 {
-                    results[i] = Optional.of(results[i]);
+                    results[i] = Optional.ofNullable(results[i]);
                 }
             }
         }
