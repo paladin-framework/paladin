@@ -5,10 +5,11 @@ import fr.litarvan.paladin.http.Request;
 import fr.litarvan.paladin.http.Response;
 
 import java.lang.annotation.Annotation;
+import java.util.Optional;
 
 public abstract class InjectableRouteAction implements RouteAction
 {
-    private String[] requestParams = null;
+    private String[] requiredParams = null;
     private String[] optionalParams = null;
 
     @Override
@@ -17,7 +18,7 @@ public abstract class InjectableRouteAction implements RouteAction
         Class[] types = getTypes();
         Object[] results = new Object[types.length];
 
-        if (requestParams == null && optionalParams == null)
+        if (requiredParams == null && optionalParams == null)
         {
             Annotation[] annotations = getAnnotations();
 
@@ -25,7 +26,7 @@ public abstract class InjectableRouteAction implements RouteAction
             {
                 if (annotation.annotationType() == RequestParams.class)
                 {
-                    requestParams = ((RequestParams) annotation).required();
+                    requiredParams = ((RequestParams) annotation).required();
                     optionalParams = ((RequestParams) annotation).optional();
                     break;
                 }
@@ -34,30 +35,18 @@ public abstract class InjectableRouteAction implements RouteAction
 
         int i = 0;
 
-        if (requestParams != null)
+        if (requiredParams != null)
         {
-            for (; i < requestParams.length; i++)
+            for (; i < requiredParams.length + optionalParams.length; i++)
             {
-                String name = requestParams[i];
+                boolean optional = i >= requiredParams.length;
+
+                String name = !optional ? requiredParams[i] : optionalParams[i];
                 String result = request.getParam(name);
 
-                if (result == null)
+                if (result == null && !optional)
                 {
-                    boolean optional = false;
-
-                    for (String param : optionalParams)
-                    {
-                        if (param.equalsIgnoreCase(name))
-                        {
-                            optional = true;
-                            break;
-                        }
-                    }
-
-                    if (!optional)
-                    {
-                        throw new ParameterMissingException("Missing parameter '" + name + "'");
-                    }
+                    throw new ParameterMissingException("Missing parameter '" + name + "'");
                 }
 
                 if (result == null)
@@ -133,6 +122,15 @@ public abstract class InjectableRouteAction implements RouteAction
                     {
                         throw new ParameterFormatException("Parameter '" + name + "' should be a " + Double.SIZE + "-bits floating number");
                     }
+                }
+                else
+                {
+                    continue;
+                }
+
+                if (optional)
+                {
+                    results[i] = Optional.of(results[i]);
                 }
             }
         }
