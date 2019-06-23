@@ -219,7 +219,7 @@ public abstract class InjectableRouteAction implements RouteAction
             }
             catch (NumberFormatException e)
             {
-            	throw new ParameterFormatException("Parameter '" + name + "' isn't a valid");
+            	throw new ParameterFormatException("Parameter '" + name + "' isn't valid");
             }
         }
         else
@@ -230,7 +230,7 @@ public abstract class InjectableRouteAction implements RouteAction
         	}
         	catch (ClassCastException e)
         	{
-        		throw new ParameterFormatException("Parameter '" + name + "' isn't a valid");
+        		throw new ParameterFormatException("Parameter '" + name + "' isn't valid");
         	}
         }
     }
