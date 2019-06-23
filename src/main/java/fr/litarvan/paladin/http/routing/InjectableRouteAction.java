@@ -114,7 +114,7 @@ public abstract class InjectableRouteAction implements RouteAction
     }
     
     protected Object parse(String name, String value, Class type) throws ParameterFormatException, IllegalArgumentException
-    {    	
+    {
         if (value == null)
         {
             return null;
@@ -209,6 +209,17 @@ public abstract class InjectableRouteAction implements RouteAction
             catch (NumberFormatException e)
             {
                 throw new ParameterFormatException("Parameter '" + name + "' isn't a valid number");
+            }
+        }
+        else if (type.isEnum())
+        {
+            try
+            {
+                return Enum.valueOf(type, value);
+            }
+            catch (NumberFormatException e)
+            {
+            	throw new ParameterFormatException("Parameter '" + name + "' isn't a valid");
             }
         }
         else
