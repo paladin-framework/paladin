@@ -1,11 +1,13 @@
 package fr.litarvan.paladin.http.routing;
 
+import java.lang.annotation.Annotation;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.Optional;
+
 import fr.litarvan.paladin.Session;
 import fr.litarvan.paladin.http.Request;
 import fr.litarvan.paladin.http.Response;
-
-import java.lang.annotation.Annotation;
-import java.util.Optional;
 
 public abstract class InjectableRouteAction implements RouteAction
 {
@@ -59,7 +61,7 @@ public abstract class InjectableRouteAction implements RouteAction
                 {
                     throw new ParameterMissingException("Missing parameter '" + name + "'");
                 }
-                
+
                 results[i] = parse(name, result, optType != null ? optType : types[i]);
 
                 if (types[i] == Optional.class)
@@ -112,7 +114,7 @@ public abstract class InjectableRouteAction implements RouteAction
     }
     
     protected Object parse(String name, String value, Class type) throws ParameterFormatException, IllegalArgumentException
-    {
+    {    	
         if (value == null)
         {
             return null;
@@ -187,8 +189,39 @@ public abstract class InjectableRouteAction implements RouteAction
                 throw new ParameterFormatException("Parameter '" + name + "' should be a " + Double.SIZE + "-bits floating number");
             }
         }
-
-        return null;
+        else if (type == BigDecimal.class)
+        {
+            try
+            {
+                return new BigDecimal(value);
+            }
+            catch (NumberFormatException e)
+            {
+                throw new ParameterFormatException("Parameter '" + name + "' isn't a valid decimal number");
+            }
+        }
+        else if (type == BigInteger.class)
+        {
+            try
+            {
+                return new BigInteger(value);
+            }
+            catch (NumberFormatException e)
+            {
+                throw new ParameterFormatException("Parameter '" + name + "' isn't a valid number");
+            }
+        }
+        else
+        {
+        	try
+        	{
+        		return type.cast(value);
+        	}
+        	catch (ClassCastException e)
+        	{
+        		throw new ParameterFormatException("Parameter '" + name + "' isn't a valid");
+        	}
+        }
     }
 
     protected Class parseClass(String name) throws ClassNotFoundException
@@ -211,9 +244,12 @@ public abstract class InjectableRouteAction implements RouteAction
                 return double.class;
             case "char":
                 return char.class;
+            case "bigdecimal":
+            	return BigDecimal.class;
+            case "biginteger":
+            	return BigInteger.class;
             default:
                 return Class.forName(name.contains(".") ? name : "java.lang." + name);
-
         }
     }
 
