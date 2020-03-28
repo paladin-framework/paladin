@@ -217,7 +217,7 @@ public abstract class InjectableRouteAction implements RouteAction
             {
                 return Enum.valueOf(type, value);
             }
-            catch (NumberFormatException e)
+            catch (IllegalArgumentException e)
             {
             	throw new ParameterFormatException("Parameter '" + name + "' isn't valid");
             }
