@@ -46,14 +46,14 @@ public class Paladin
     private Injector injector;
 
     private Router router;
-    private SessionManager sessionManager;
+    private ISessionManager sessionManager;
     private ExceptionHandler exceptionHandler;
 
     private Map<String, Controller> controllers;
     private Map<String, Middleware> middlewares;
     private List<Middleware> globalMiddlewares;
 
-    public Paladin(Class<?> app, PaladinConfig config, Module... guiceModules)
+    public Paladin(Class<?> app, PaladinConfig config, ISessionManager sessionManager, Module... guiceModules)
     {
         this.mapper = new ObjectMapper();
 
@@ -62,7 +62,7 @@ public class Paladin
         this.mapper.registerModule(module);
 
         this.router = new Router(this);
-        this.sessionManager = new SessionManager();
+        this.sessionManager = sessionManager;
         this.exceptionHandler = new ExceptionHandler();
 
         this.controllers = new HashMap<>();
@@ -77,6 +77,11 @@ public class Paladin
         this.injector = Guice.createInjector(modules);
         this.app = injector.getInstance(app);
         this.appInfo = app.getDeclaredAnnotation(PaladinApp.class);
+    }
+
+    public Paladin(Class<?> app, PaladinConfig config, Module... guiceModules)
+    {
+    	this(app, config, new SessionManager(), guiceModules);
     }
 
     public void start()
@@ -299,7 +304,7 @@ public class Paladin
         return router;
     }
 
-    public SessionManager getSessionManager()
+    public ISessionManager getSessionManager()
     {
         return sessionManager;
     }

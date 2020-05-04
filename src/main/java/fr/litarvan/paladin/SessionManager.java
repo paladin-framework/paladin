@@ -13,7 +13,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.IntFunction;
 
-public class SessionManager implements Iterable<Session>
+public class SessionManager implements ISessionManager, Iterable<Session>
 {
     public static final long DEFAULT_SESSION_DURATION = TimeUnit.DAYS.toSeconds(30);
     public static final int TOKEN_LENGTH = 64;
