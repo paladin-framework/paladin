@@ -7,9 +7,7 @@ import fr.litarvan.paladin.http.routing.Route;
 public class AcceptCrossOriginRequestsMiddleware extends Middleware
 {
     @Override
-    public void before(BeforeEvent event, Request request, Response response, Route route)
-    {
-    }
+    public void before(BeforeEvent event, Request request, Response response, Route route) {}
 
     @Override
     public void after(AfterEvent event, Request request, Response response, Route route)
@@ -19,7 +17,7 @@ public class AcceptCrossOriginRequestsMiddleware extends Middleware
         if (request.getMethod() == HttpMethod.OPTIONS)
         {
             response.addHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-            response.addHeader("Access-Control-Allow-Headers", "origin, x-csrftoken, content-type, token, accept");
+            response.addHeader("Access-Control-Allow-Headers", "origin, x-csrftoken, content-type, token, accept, authorization");
 
             event.setResult(true);
         }

@@ -36,6 +36,7 @@ public class PaladinBuilder
     private String configFolder;
     private String defaultMainConfigPath;
     private String[] argv;
+    private ISessionManager sessionManager;
 
     private PaladinBuilder(Class<?> app)
     {
@@ -43,6 +44,7 @@ public class PaladinBuilder
         this.modules = new ArrayList<>();
         this.configFolder = "/config";
         this.argv = new String[]{};
+        this.sessionManager = new SessionManager();
     }
 
     public static PaladinBuilder create(Class<?> app)
@@ -72,6 +74,12 @@ public class PaladinBuilder
     {
         this.argv = argv;
         return this;
+    }
+
+    public PaladinBuilder setSessionManager(ISessionManager sessionManager)
+    {
+    	this.sessionManager = sessionManager;
+    	return this;
     }
 
     public Paladin build()
@@ -128,7 +136,7 @@ public class PaladinBuilder
             config.set("disableLogs", true);
         }
 
-        Paladin paladin = new Paladin(app, config, modules.toArray(new Module[0]));
+        Paladin paladin = new Paladin(app, config, sessionManager, modules.toArray(new Module[0]));
 
         if (result.has("v"))
         {

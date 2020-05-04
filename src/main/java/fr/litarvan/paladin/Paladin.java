@@ -79,11 +79,6 @@ public class Paladin
         this.appInfo = app.getDeclaredAnnotation(PaladinApp.class);
     }
 
-    public Paladin(Class<?> app, PaladinConfig config, Module... guiceModules)
-    {
-    	this(app, config, new SessionManager(), guiceModules);
-    }
-
     public void start()
     {
         start(new ApacheAsyncHttpServer(this, config.get("port", int.class)));
