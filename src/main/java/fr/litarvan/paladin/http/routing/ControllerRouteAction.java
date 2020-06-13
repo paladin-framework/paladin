@@ -1,14 +1,15 @@
 package fr.litarvan.paladin.http.routing;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import fr.litarvan.paladin.http.Controller;
-import fr.litarvan.paladin.http.Request;
-import fr.litarvan.paladin.http.Response;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import fr.litarvan.paladin.http.Controller;
+import fr.litarvan.paladin.http.Request;
+import fr.litarvan.paladin.http.Response;
 
 public class ControllerRouteAction extends InjectableRouteAction
 {
@@ -16,6 +17,7 @@ public class ControllerRouteAction extends InjectableRouteAction
 
     private Controller controller;
     private Method method;
+    private JsonBody jsonBody;
 
     private Class[] types;
     private Annotation[] annotations;
@@ -24,20 +26,29 @@ public class ControllerRouteAction extends InjectableRouteAction
     {
         this.controller = controller;
         this.method = method;
+
+        if (method.isAnnotationPresent(JsonBody.class)) {
+            this.jsonBody = method.getAnnotation(JsonBody.class);
+        }
     }
 
     @Override
     public Object call(Request request, Response response) throws Exception
     {
-        if (method.isAnnotationPresent(JsonBody.class)) {
+        if (jsonBody != null) {
             String content = request.getContentString();
             JsonNode tree = mapper.readTree(content);
 
             if (tree != null) {
-                tree.fields().forEachRemaining(entry -> {
-                    JsonNode value = entry.getValue();
-                    request.getParams().put(entry.getKey(), value.isTextual() ? value.textValue() : value.toString());
-                });
+                if (jsonBody.parse()) {
+                    tree.fields().forEachRemaining(entry -> {
+                        JsonNode value = entry.getValue();
+                        request.getParams().put(entry.getKey(), value.isTextual() ? value.textValue() : value.toString());
+                    });
+                } else {
+                    request.getParams().put("__jBdy", tree.toString());
+                }
+
             }
         }
 
