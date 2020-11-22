@@ -7,10 +7,7 @@ import fr.litarvan.paladin.http.routing.Route;
 public class AcceptCrossOriginRequestsMiddleware extends Middleware
 {
     @Override
-    public void before(BeforeEvent event, Request request, Response response, Route route) {}
-
-    @Override
-    public void after(AfterEvent event, Request request, Response response, Route route)
+    public void before(BeforeEvent event, Request request, Response response, Route route)
     {
         response.addHeader("Access-Control-Allow-Origin", "*");
 
@@ -22,4 +19,8 @@ public class AcceptCrossOriginRequestsMiddleware extends Middleware
             event.setResult(true);
         }
     }
+
+    @Override
+    public void after(AfterEvent event, Request request, Response response, Route route)
+    {}
 }

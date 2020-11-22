@@ -1,13 +1,13 @@
 package fr.litarvan.paladin;
 
+import fr.litarvan.paladin.http.ISession;
 import fr.litarvan.paladin.http.Request;
 import fr.litarvan.paladin.http.Response;
 
 public interface ISessionManager {
 
-	Session get(Request request, Response response);
-
-	long getExpirationDelay();
-
+	ISession get(Request request, Response response);
+	ISession createSession();
+	void destroySession(ISession session);
 	void setExpirationDelay(long expirationDelay);
 }

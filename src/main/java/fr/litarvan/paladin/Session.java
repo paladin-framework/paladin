@@ -3,7 +3,9 @@ package fr.litarvan.paladin;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Session
+import fr.litarvan.paladin.http.ISession;
+
+public class Session implements ISession
 {
     private long expirationTime;
     private String token;
@@ -34,35 +36,5 @@ public class Session
     public Map<Class<?>, Object> getData()
     {
         return data;
-    }
-
-    public <T> T get(Class<T> type)
-    {
-        return (T) getData().get(type);
-    }
-
-    public <T> T getAt(Class<T> type)
-    {
-        return get(type);
-    }
-
-    public <T> void set(Class<T> type, T value)
-    {
-        getData().put(type, value);
-    }
-
-    public <T> void putAt(Class<T> type, T value)
-    {
-        set(type, value);
-    }
-
-    public boolean has(Class<?> key)
-    {
-        return getData().containsKey(key);
-    }
-
-    public void delete(Class<?> key)
-    {
-        getData().remove(key);
     }
 }

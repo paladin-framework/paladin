@@ -5,7 +5,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Optional;
 
-import fr.litarvan.paladin.Session;
+import fr.litarvan.paladin.http.ISession;
 import fr.litarvan.paladin.http.Request;
 import fr.litarvan.paladin.http.Response;
 
@@ -71,16 +71,15 @@ public abstract class InjectableRouteAction implements RouteAction
             }
         }
 
-        Session session = request.getSession();
-
+        ISession session = request.getSession();
         for (; i < results.length; i++)
         {
             Class type = types[i];
             Object result = null;
 
-            if (type == Session.class)
+            if (ISession.class.isAssignableFrom(type))
             {
-                result = session;
+            	result = type.cast(session);
             }
             else if (type == Request.class)
             {
@@ -91,7 +90,7 @@ public abstract class InjectableRouteAction implements RouteAction
                 result = response;
             }
 
-            if (result == null)
+            if (result == null && session != null)
             {
                 result = session.get(type);
             }

@@ -1,17 +1,23 @@
 package fr.litarvan.paladin;
 
-import com.google.common.collect.Iterators;
-import com.google.common.io.BaseEncoding;
-import fr.litarvan.paladin.http.Header;
-import fr.litarvan.paladin.http.Request;
-import fr.litarvan.paladin.http.Response;
-
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Objects;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.function.IntFunction;
+
+import com.google.common.collect.Iterators;
+import com.google.common.io.BaseEncoding;
+
+import fr.litarvan.paladin.http.Header;
+import fr.litarvan.paladin.http.ISession;
+import fr.litarvan.paladin.http.Request;
+import fr.litarvan.paladin.http.Response;
 
 public class SessionManager implements ISessionManager, Iterable<Session>
 {
@@ -58,7 +64,7 @@ public class SessionManager implements ISessionManager, Iterable<Session>
 
         if (session == null)
         {
-            session = create();
+            session = createSession();
             response.addHeader(Header.PALADIN_TOKEN, session.getToken());
         }
 
@@ -70,7 +76,7 @@ public class SessionManager implements ISessionManager, Iterable<Session>
         return sessions().stream().filter(session -> Objects.equals(token, session.getToken())).findFirst().orElse(null);
     }
 
-    public Session create()
+    public Session createSession()
     {
         long expiresAt = expirationDelay <= 0 ? -1 : LocalDateTime.now().toEpochSecond(ZoneOffset.UTC) * 1000 + expirationDelay;
 
@@ -114,4 +120,10 @@ public class SessionManager implements ISessionManager, Iterable<Session>
     {
         return Iterators.forArray(sessions().toArray(new Session[0]));
     }
+
+	@Override
+	public void destroySession(ISession session)
+	{
+		this.sessions.remove(session);
+	}
 }

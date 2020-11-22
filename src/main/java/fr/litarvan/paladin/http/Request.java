@@ -1,10 +1,9 @@
 package fr.litarvan.paladin.http;
 
-import fr.litarvan.paladin.Paladin;
-import fr.litarvan.paladin.Session;
-
 import java.nio.charset.Charset;
 import java.util.Map;
+
+import fr.litarvan.paladin.Paladin;
 
 public class Request
 {
@@ -21,6 +20,7 @@ public class Request
     private Cookie[] cookies;
 
     private Response response;
+    private ISession session;
 
     public Request(Paladin paladin, String ip, HttpMethod method, String uri, Header[] headers, byte[] content, Map<String, String> params, Cookie[] cookies, Response response)
     {
@@ -180,8 +180,12 @@ public class Request
         this.cookies = cookies;
     }
 
-    public Session getSession()
+    public ISession getSession()
     {
-        return getPaladin().getSessionManager().get(this, response);
+    	if (session == null) {
+    		session = getPaladin().getSessionManager().get(this, response);
+    	}
+
+        return session;
     }
 }
