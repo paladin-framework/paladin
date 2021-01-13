@@ -64,7 +64,7 @@ public class SessionManager implements ISessionManager, Iterable<Session>
 
         if (session == null)
         {
-            session = createSession();
+            session = createSession(request);
             response.addHeader(Header.PALADIN_TOKEN, session.getToken());
         }
 
@@ -76,7 +76,7 @@ public class SessionManager implements ISessionManager, Iterable<Session>
         return sessions().stream().filter(session -> Objects.equals(token, session.getToken())).findFirst().orElse(null);
     }
 
-    public Session createSession()
+    public Session createSession(Request request)
     {
         long expiresAt = expirationDelay <= 0 ? -1 : LocalDateTime.now().toEpochSecond(ZoneOffset.UTC) * 1000 + expirationDelay;
 

@@ -7,7 +7,7 @@ import fr.litarvan.paladin.http.Response;
 public interface ISessionManager {
 
 	ISession get(Request request, Response response);
-	ISession createSession();
+	ISession createSession(Request request);
 	void destroySession(ISession session);
 	void setExpirationDelay(long expirationDelay);
 }
